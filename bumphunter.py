@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
-from math import log
+from math import log, sqrt
 
 from numpy import array, random
-from scipy.stats import poisson
+from scipy.stats import percentileofscore, poisson
 
 def evaluate_statistic(data, mc, verbose=False, edges=None):
     # Get search range (first bin with data, last bin with data)
@@ -49,13 +49,16 @@ def make_toys(prediction, n):
     
 def bumphunter(hdata, hmc, n):
     "Compute the bumphunter statistic and run `n` pseudo-experiments"
-    data = array(hdata[i] for i in xrange(1, hdata.GetNbinsX()))
-    mc   = array(hmc[i]   for i in xrange(1, hmc.GetNbinsX()))
+    data = array([hdata[i] for i in xrange(1, hdata.GetNbinsX())])
+    mc   = array([hmc[i]   for i in xrange(1, hmc.GetNbinsX())])
     
     pseudo_experiments = [evaluate_statistic(pe, mc)[0]
                           for pe in make_toys(mc, n)]
     
     measurement, (lo, hi) = evaluate_statistic(data, mc)
     
-    return measurement, (lo, hi), pseudo_experiments
+    pvalue = 1. - (percentileofscore(pseudo_experiments, measurement) / 100.)
+    pvalue_uncertainty = sqrt(pvalue * (1. - pvalue) / n)
+    
+    return measurement, (lo, hi), pseudo_experiments, pvalue, pvalue_uncertainty
 
