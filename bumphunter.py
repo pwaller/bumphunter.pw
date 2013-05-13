@@ -52,7 +52,7 @@ def bumphunter(hdata, hmc, n):
     data = array(hdata[i] for i in xrange(1, hdata.GetNbinsX()))
     mc   = array(hmc[i]   for i in xrange(1, hmc.GetNbinsX()))
     
-    pseudo_experiments = [evaluate_statistic(data, pe)[0]
+    pseudo_experiments = [evaluate_statistic(pe, mc)[0]
                           for pe in make_toys(mc, n)]
     
     measurement, (lo, hi) = evaluate_statistic(data, mc)
